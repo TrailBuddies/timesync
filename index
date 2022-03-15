@@ -1,5 +1,8 @@
+#!/usr/bin/env node
+
 const {Client, Intents} = require('discord.js');
 const {config} = require('dotenv');
+const cron = require('node-cron');
 config();
 
 const client = new Client({
@@ -7,8 +10,19 @@ const client = new Client({
 });
 
 client.once('ready', () => {
+	// run every hour
+	const task = cron.schedule('0 * * * *', () => setNicknames(client));
+	task.start();
+	console.log(`Logged in as ${client.user.tag}`);
+});
+
+client.login(process.env.TOKEN);
+
+function setNicknames(client) {
+	console.log(new Date().toUTCString() + ': Setting nicknames');
+
 	client.guilds.cache.forEach((g) => {
-		g.members.cache.forEach((m) => {
+		g.members.cache.forEach(async (m) => {
 			if (m.user.bot || m.guild.ownerId === m.user.id) return;
 
 			const role = m.roles.cache.find((r) => r.name.startsWith('tz='));
@@ -21,10 +35,10 @@ client.once('ready', () => {
 				const min = (new Date().getUTCMinutes() + parseFloat(minuteOffset)) % 60;
 
 				const currentTime = `${hour > 9 ? '' : '0'}${hour}:${min}`;
-				m.setNickname(`${m.displayName.split('|')[0]} | ${currentTime}`);
+				await m.setNickname(`${m.displayName.split('|')[0]} | ${currentTime}`);
 			} else console.error(`Failed to find timezone role for ${m.user.tag} in ${g.name}`);
 		});
 	});
-});
 
-client.login(process.env.TOKEN);
+	console.log('done ----------\n\n');
+}
