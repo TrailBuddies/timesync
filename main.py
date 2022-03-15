@@ -1,11 +1,13 @@
 import discord
-import os
+from decouple import config
 
 
-class TimeSync(discord.Client):
-    async def on_ready(self):
-        print('Logged on as', self.user)
+client = discord.Client()
 
 
-client = TimeSync()
-client.run(os.environ('TOKEN'))
+@client.event
+async def on_ready():
+    print('We have logged in as {0} '.format(client.user))
+
+
+client.run(config('TOKEN'))
