@@ -2,7 +2,6 @@
 
 const {Client, Intents} = require('discord.js');
 const {config} = require('dotenv');
-const cron = require('node-cron');
 config();
 
 const client = new Client({
@@ -10,10 +9,8 @@ const client = new Client({
 });
 
 client.once('ready', () => {
-	// run every hour
-	const task = cron.schedule('0 * * * *', () => setNicknames(client));
-	task.start();
 	console.log(`Logged in as ${client.user.tag}`);
+	setNicknames();
 });
 
 client.login(process.env.TOKEN);
