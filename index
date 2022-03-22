@@ -18,9 +18,15 @@ client.login(process.env.TOKEN);
 function setNicknames(client) {
 	console.log(new Date().toUTCString() + ': Setting nicknames');
 
+	let totalMembers = client.guilds.cache.map((guild) => guild.members.cache.size).reduce((a, b) => a + b);
+	let currMember = 0;
+
 	client.guilds.cache.forEach((g) => {
 		g.members.cache.forEach(async (m) => {
-			if (m.user.bot || m.guild.ownerId === m.user.id) return;
+			if (m.user.bot || m.guild.ownerId === m.user.id) {
+				currMember++;
+				return;
+			}
 
 			const role = m.roles.cache.find((r) => r.name.startsWith('tz='));
 			if (role) {
@@ -31,11 +37,24 @@ function setNicknames(client) {
 				const hour = (new Date().getUTCHours() + parseFloat(hourOffset)) % 24;
 				const min = (new Date().getUTCMinutes() + parseFloat(minuteOffset)) % 60;
 
-				const currentTime = `${hour > 9 ? '' : '0'}${hour}:${min}`;
+				const currentTime = `${hour > 9 ? '' : '0'}${hour}h${min}`;
 				await m.setNickname(`${m.displayName.split('|')[0]} | ${currentTime}`);
-			} else console.error(`Failed to find timezone role for ${m.user.tag} in ${g.name}`);
+				
+				console.log(`${new Date().toLocaleTimeString()}: Set ${m.user.tag}'s time to ${currentTime}`)
+				currMember++;
+			} else {
+				console.error(`Failed to find timezone role for ${m.user.tag} in ${g.name}`);
+				currMember++;
+			}
 		});
 	});
 
-	console.log('done ----------\n\n');
+	setInterval(async () => {
+		if (currMember >= totalMembers) {
+			await client.destroy();
+			console.log('done ----------\n\n');
+			process.exit(0);
+		}
+	}, 1000)
+
 }
