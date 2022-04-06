@@ -37,7 +37,7 @@ function setNicknames(client) {
 				const hour = (new Date().getUTCHours() + parseFloat(hourOffset)) % 24;
 				const min = (new Date().getUTCMinutes() + parseFloat(minuteOffset)) % 60;
 
-				const currentTime = hour >= 12 ? `${hour - 12}:${min}pm` : `${hour}:${min}am`;
+				const currentTime = hour > 12 ? `${hour - 12}:${min}pm` : `${hour}:${min}am`;
 				await m.setNickname(`${m.displayName.split('|')[0].trim()} | ${currentTime}`);
 				
 				console.log(`${new Date().toLocaleTimeString()}: Set ${m.user.tag}'s time to ${currentTime}`)
